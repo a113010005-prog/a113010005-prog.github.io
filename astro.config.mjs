@@ -7,6 +7,7 @@ import { defineConfig, fontProviders } from 'astro/config';
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://a113010005-prog.github.io',
+	base: '/linata.github.io',
 	integrations: [mdx(), sitemap()],
 	fonts: [
 		{
