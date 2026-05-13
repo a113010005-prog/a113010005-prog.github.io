@@ -1,0 +1,265 @@
+---
+import BaseHead from '../components/BaseHead.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <BaseHead title="世新大學水泥車事故懶人包" description="世新大學水泥車撞大禮堂事故 IG 輪播圖" />
+  <style>
+    :root {
+      --bg:      oklch(97% 0.018 70);
+      --surface: oklch(99% 0.008 70);
+      --fg:      oklch(22% 0.02 50);
+      --muted:   oklch(50% 0.018 50);
+      --border:  oklch(90% 0.014 70);
+      --accent:  oklch(64% 0.13 28);
+      --font-display: 'Tiempos Headline', 'Newsreader', 'Iowan Old Style', 'Songti TC', 'Noto Serif CJK TC', Georgia, serif;
+      --font-body: 'Söhne', -apple-system, BlinkMacSystemFont, 'PingFang TC', 'Noto Sans CJK TC', system-ui, sans-serif;
+    }
+    .carousel-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem 4rem;
+    }
+    .carousel-section h2 {
+      font-size: 1.4rem;
+      margin-bottom: 1.5rem;
+      color: var(--fg);
+    }
+    .viewer {
+      position: relative;
+      width: min(90vw, 90vh, 540px);
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px oklch(0 0 0 / 0.06), 0 20px 60px oklch(0 0 0 / 0.12);
+      background: var(--bg);
+    }
+    .carousel {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 48px 44px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+      pointer-events: none;
+    }
+    .slide.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .slide::before {
+      content: '';
+      position: absolute;
+      top: 28px;
+      left: 44px;
+      right: 44px;
+      height: 2px;
+      background: var(--accent);
+      opacity: 0.35;
+      border-radius: 1px;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--surface);
+      background: var(--accent);
+      padding: 4px 12px;
+      border-radius: 4px;
+      align-self: flex-start;
+      margin-top: 12px;
+    }
+    h1.slide-title {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 6.5vw, 52px);
+      font-weight: 600;
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+      color: var(--fg);
+      margin: 24px 0 0;
+      max-width: 90%;
+    }
+    .highlight {
+      font-family: var(--font-display);
+      font-size: clamp(18px, 2.8vw, 24px);
+      font-weight: 500;
+      line-height: 1.3;
+      color: var(--accent);
+      margin: 12px 0 0;
+      padding: 12px 0 0;
+      border-top: 1.5px solid var(--accent);
+      display: inline-block;
+      align-self: flex-start;
+    }
+    .body-text {
+      font-family: var(--font-body);
+      font-size: clamp(13px, 1.8vw, 16px);
+      line-height: 1.75;
+      color: var(--fg);
+      margin-top: 16px;
+      flex: 1;
+      max-width: 88%;
+    }
+    .slide-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+    .page-num {
+      font-family: var(--font-body);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+    .brand {
+      font-family: var(--font-body);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      background: var(--border);
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+    .nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 10;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: var(--surface);
+      color: var(--fg);
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px oklch(0 0 0 / 0.08);
+      transition: background 0.15s, box-shadow 0.15s;
+    }
+    .nav-btn:hover { background: var(--bg); box-shadow: 0 2px 12px oklch(0 0 0 / 0.12); }
+    .nav-prev { left: 12px; }
+    .nav-next { right: 12px; }
+    .dots {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 6px;
+      z-index: 10;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--border);
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, width 0.2s;
+      padding: 0;
+    }
+    .dot.active { background: var(--accent); width: 18px; }
+  </style>
+</head>
+<body>
+  <Header />
+  <main>
+    <div class="carousel-section">
+      <h2>世新大學水泥車事故懶人包</h2>
+      <div class="viewer">
+        <div class="carousel">
+          <div class="slide active" data-index="0">
+            <div class="eyebrow">突發</div>
+            <h1 class="slide-title">水泥車失靈<br>直撞世新大禮堂</h1>
+            <div class="body-text">
+              <p>一輛預拌混凝土車行經世新大學校區時，疑似手煞車失靈，失控衝撞校內大禮堂。車輛撞破大門、車頭卡進入口，消防局獲報後迅速到場救援。</p>
+            </div>
+            <div class="slide-footer">
+              <span class="page-num">1 / 3</span>
+              <span class="brand">世新大學事故懶人包</span>
+            </div>
+          </div>
+          <div class="slide" data-index="1">
+            <div class="eyebrow">現場直擊</div>
+            <h1 class="slide-title">車頭變形<br>駕駛驚險跳車</h1>
+            <div class="highlight">駕駛跳車逃生　僅受輕傷</div>
+            <div class="body-text">
+              <p>撞擊力道猛烈，水泥車車頭嚴重毀損變形。駕駛在撞擊前一刻緊急跳車逃生，送醫後無大礙。校方隨即封鎖現場，禁止人員靠近，避免二次事故。</p>
+            </div>
+            <div class="slide-footer">
+              <span class="page-num">2 / 3</span>
+              <span class="brand">世新大學事故懶人包</span>
+            </div>
+          </div>
+          <div class="slide" data-index="2">
+            <div class="eyebrow">最新進度</div>
+            <h1 class="slide-title">警調事故原因<br>校方協商賠償</h1>
+            <div class="body-text">
+              <p>警方已介入調查，釐清是否為機械故障或人為疏失。校方表示將與混凝土業者協商後續賠償事宜，並檢討校園車輛進出管制機制，確保類似事件不再發生。</p>
+            </div>
+            <div class="slide-footer">
+              <span class="page-num">3 / 3</span>
+              <span class="brand">世新大學事故懶人包</span>
+            </div>
+          </div>
+        </div>
+        <button class="nav-btn nav-prev" id="prevBtn" aria-label="上一張">‹</button>
+        <button class="nav-btn nav-next" id="nextBtn" aria-label="下一張">›</button>
+        <div class="dots" id="dots"></div>
+      </div>
+    </div>
+  </main>
+  <Footer />
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const total = slides.length;
+    let current = 0;
+    const dotsContainer = document.getElementById('dots');
+    for (let i = 0; i < total; i++) {
+      const dot = document.createElement('button');
+      dot.className = 'dot' + (i === 0 ? ' active' : '');
+      dot.dataset.index = String(i);
+      dot.addEventListener('click', () => go(i));
+      dotsContainer.appendChild(dot);
+    }
+    function go(idx) {
+      if (idx < 0 || idx >= total || idx === current) return;
+      slides[current].classList.remove('active');
+      dotsContainer.children[current].classList.remove('active');
+      current = idx;
+      slides[current].classList.add('active');
+      dotsContainer.children[current].classList.add('active');
+    }
+    document.getElementById('prevBtn').addEventListener('click', () => go(current - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => go(current + 1));
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') go(current - 1);
+      if (e.key === 'ArrowRight') go(current + 1);
+    });
+  </script>
+</body>
+</html>
